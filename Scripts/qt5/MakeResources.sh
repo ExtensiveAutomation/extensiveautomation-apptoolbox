@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # -------------------------------------------------------------------
-# Copyright (c) 2010-2018 Denis Machard
+# Copyright (c) 2010-2019 Denis Machard
 # This file is part of the extensive automation project
 #
 # This library is free software; you can redistribute it and/or
@@ -21,4 +21,4 @@
 # -------------------------------------------------------------------
 
 echo "Building files resources..."
-python3 -m PyQt5.pyrcc_main -o ../../Resources/Resources.py ../../Resources/__resources.qrc
+py -m PyQt5.pyrcc_main -o ../../Resources/Resources.py ../../Resources/__resources.qrc

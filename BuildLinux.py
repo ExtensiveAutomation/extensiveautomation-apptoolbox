@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------------------------------
-# Copyright (c) 2010-2018 Denis Machard
+# Copyright (c) 2010-2019 Denis Machard
 # This file is part of the extensive automation project
 #
 # This library is free software; you can redistribute it and/or
@@ -46,7 +46,7 @@ settings = Settings.instance()
 Settings.set( section='Trace', key='level', value='INFO' )
 
 Settings.set( section='Server', key='ip', value='127.0.0.1' )
-Settings.set( section='Server', key='port', value='443' )
+Settings.set( section='Server', key='port', value='8080' )
 Settings.set( section='Server', key='port-proxy-http', value='' )
 Settings.set( section='Server', key='addr-proxy-http', value='' )
 Settings.set( section='Server', key='proxy-active', value='False' )
@@ -91,26 +91,26 @@ settingsFile = "%s/settings.ini" % Settings.getDirExec()
 versionFile = "%s/VERSION" % Settings.getDirExec()
 
 # adding java setup
-Java_Path = "%s/Bin/Java/" % Settings.getDirExec()
-Java_Files = [ f for f in os.listdir(Java_Path) if os.path.isfile(os.path.join(Java_Path,f)) ]
+# Java_Path = "%s/Bin/Java/" % Settings.getDirExec()
+# Java_Files = [ f for f in os.listdir(Java_Path) if os.path.isfile(os.path.join(Java_Path,f)) ]
 
 # adding sikuli files
-Sikuli_Path = "%s/Bin/Sikuli/" % Settings.getDirExec()
-Sikuli_Files = [ f for f in os.listdir(Sikuli_Path) if os.path.isfile(os.path.join(Sikuli_Path,f)) ]
+# Sikuli_Path = "%s/Bin/Sikuli/" % Settings.getDirExec()
+# Sikuli_Files = [ f for f in os.listdir(Sikuli_Path) if os.path.isfile(os.path.join(Sikuli_Path,f)) ]
 
 # adding selenium
-Selenium_Path = "%s/Bin/Selenium/" % Settings.getDirExec()
-Selenium_Files = [ f for f in os.listdir(Selenium_Path) if os.path.isfile(os.path.join(Selenium_Path,f)) ]
-Selenium2_Path = "%s/Bin/Selenium2/" % Settings.getDirExec()
-Selenium2_Files = [ f for f in os.listdir(Selenium2_Path) if os.path.isfile(os.path.join(Selenium2_Path,f)) ]
+# Selenium_Path = "%s/Bin/Selenium/" % Settings.getDirExec()
+# Selenium_Files = [ f for f in os.listdir(Selenium_Path) if os.path.isfile(os.path.join(Selenium_Path,f)) ]
+# Selenium2_Path = "%s/Bin/Selenium2/" % Settings.getDirExec()
+# Selenium2_Files = [ f for f in os.listdir(Selenium2_Path) if os.path.isfile(os.path.join(Selenium2_Path,f)) ]
 
 # adding apk
-Apk_Path = "%s/Bin/Apk/" % Settings.getDirExec()
-Apk_Files = [ f for f in os.listdir(Apk_Path) if os.path.isfile(os.path.join(Apk_Path,f)) ]
+# Apk_Path = "%s/Bin/Apk/" % Settings.getDirExec()
+# Apk_Files = [ f for f in os.listdir(Apk_Path) if os.path.isfile(os.path.join(Apk_Path,f)) ]
 
 # adding ddl
-Dlls_Path = "%s/Dlls/" % Settings.getDirExec()
-Dlls_Files = [ f for dp, dn, filenames in os.walk(Dlls_Path) for f in filenames]
+# Dlls_Path = "%s/Dlls/" % Settings.getDirExec()
+# Dlls_Files = [ f for dp, dn, filenames in os.walk(Dlls_Path) for f in filenames]
 
 # adding license
 licenseFile = "%s/LICENSE-LGPLv21" % ( Settings.getDirExec() )
@@ -129,30 +129,30 @@ includeFiles = [
                 ]
 
 # ddl
-for f in Dlls_Files:
-    includeFiles.append( ('%s/%s' % (Dlls_Path, f), f ), ) 
+# for f in Dlls_Files:
+    # includeFiles.append( ('%s/%s' % (Dlls_Path, f), f ), ) 
     
 # apk
-for f in Apk_Files:
-    includeFiles.append( ( 'Bin/Apk/', [ '%s/%s' % (Apk_Path, f) ] ) ) 
+# for f in Apk_Files:
+    # includeFiles.append( ( 'Bin/Apk/', [ '%s/%s' % (Apk_Path, f) ] ) ) 
 
 # selenium
-for f in Selenium_Files:
-    includeFiles.append( ('%s/%s' % (Selenium_Path, f), 'Bin/Selenium/%s' % f ), ) 
+# for f in Selenium_Files:
+    # includeFiles.append( ('%s/%s' % (Selenium_Path, f), 'Bin/Selenium/%s' % f ), ) 
     
 # selenium2
-for f in Selenium2_Files:
-    includeFiles.append( ('%s/%s' % (Selenium2_Path, f), 'Bin/Selenium2/%s' % f ), ) 
+# for f in Selenium2_Files:
+    # includeFiles.append( ('%s/%s' % (Selenium2_Path, f), 'Bin/Selenium2/%s' % f ), ) 
 
 # java
-for f in Java_Files:
-    includeFiles.append( ('%s/%s' % (Java_Path, f), 'Bin/Java/%s' % f ), ) 
+# for f in Java_Files:
+    # includeFiles.append( ('%s/%s' % (Java_Path, f), 'Bin/Java/%s' % f ), ) 
 
 # sikuli
-for f in Sikuli_Files:
-    includeFiles.append( ('%s/%s' % (Sikuli_Path, f), 'Bin/Sikuli/%s' % f ), ) 
+# for f in Sikuli_Files:
+    # includeFiles.append( ('%s/%s' % (Sikuli_Path, f), 'Bin/Sikuli/%s' % f ), ) 
 
-print(includeFiles)
+# print(includeFiles)
 
 
 # Prepare the build options

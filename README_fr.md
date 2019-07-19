@@ -1,34 +1,36 @@
-Agents for ExtensiveAutomation
+Agents pour ExtensiveAutomation
 ======================================
 
 Introduction
 ------------
 
-Agents enable to interact with the system under test  ExtensiveAutomation server.
-It's not recommended to use agents in production environnement.
+Les agents permettent de déporter l'exécution d'un test.
+Les agents peuvent être exécutés sur Windows, Linux et MacOS via:
+ - la ligne de commande
+ - un mode graphique
+Il est n'est pas recommandé d'utiliser les agents dans un environnement de production.
 
-Installation from source
+Installation depuis les sources
 ------------------------
 
-The toolbox support both Python 2 and 3. Follow this procedure to execute it
-on Windows with Python3.
+Les agents supportent Python2 et 3. Cette procédure explique comment exécuter le client.
 
-1. Clone this repository on your machine
+1. Cloner le dépôt sur votre machine
 
         git clone https://github.com/ExtensiveAutomation/extensiveautomation-apptoolbox.git
    
-2. Add additional Python packages with the pip command
+2. Installer les paquets suivants avec la commande pip
 
         py -m pip install pyinstaller pylint pyqt5
 
-3. Execution of agents exists in two modes
+3. Exécuter les agents 
 
-    * graphical mode
+    * en mode graphique
 
             cd extensiveautomation-apptoolbox/
             py Systray.py
         
-    * command line
+    * en mode ligne de commande
     
             cd extensiveautomation-apptoolbox/
             py toolagent.py
@@ -51,12 +53,13 @@ on Windows with Python3.
                                     Proxy address (optional)
               --proxy_port=PROXY_PORT
                                     Proxy port (optional)
-
-Build portable version for Windows
+                                
+Version portable pour Windows
 --------------------------------
 
-Portable version can be build on Windows. Follow this procedure if you want to.
+Une version portable sur Windows peut être disponible. 
+La procédure ci-dessous explique comment.
 
-1. Go in the folder `Scripts/qt5/` and execute the script `MakePortable.bat`
+1. Allez dans le répertoire `Scripts/qt5/` et exécuter le script `MakePortable.bat`
 
-2. The output is available in the `dist` folder
+2. L'exécutable est disponible dans le répertoire `dist`

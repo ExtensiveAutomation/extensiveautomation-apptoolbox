@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------------------------------
-# Copyright (c) 2010-2018 Denis Machard
+# Copyright (c) 2010-2019 Denis Machard
 # This file is part of the extensive automation project
 #
 # This library is free software; you can redistribute it and/or
@@ -115,7 +115,7 @@ class InnoScript(object):
 
         d.append( r"[Dirs]" )
         d.append( r'Name: "{app}\imageformats\"; Permissions: users-modify' )
-        d.append( r'Name: "{app}\Bin"; Permissions: users-modify' )
+        # d.append( r'Name: "{app}\Bin"; Permissions: users-modify' )
         d.append( r'Name: "{app}\Tmp"; Permissions: users-modify' )
         d.append( r'Name: "{app}\Logs"; Permissions: users-modify' )
         d.append( r'Name: "{app}\Plugins"; Permissions: users-modify' )

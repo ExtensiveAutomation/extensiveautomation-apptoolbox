@@ -1,4 +1,4 @@
-Copyright (c) 2010-2018 Denis Machard
+Copyright (c) 2010-2019 Denis Machard
 
 Following components are in use (see the source code or official sites for license details):
 ------------------------------------
@@ -8,25 +8,3 @@ Python:
 PyQt:
 	GNU General Public License v3
 	PyQt grants an exception to the GPL that specifies the list of licenses
-
-
-External softwares, not linked with the main application
---------------------------------------
-InnoSetup:
-	Copyright (C) 1997-2013 Jordan Russell. All rights reserved.
-	http://www.jrsoftware.org/files/is/license.txt
-	BuildInstaller.py
-
-Cx_Freeze:
-	Python Software Foundation License 
-	http://www.python.org/psf/license
-	BuildExe.py
-
-Pylint
-	GPL v3
-	PyChecker.py
-
-Sikuli
-	MIT License
-
-Java

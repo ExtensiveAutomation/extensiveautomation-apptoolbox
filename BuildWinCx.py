@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------------------------------
-# Copyright (c) 2010-2018 Denis Machard
+# Copyright (c) 2010-2019 Denis Machard
 # This file is part of the extensive automation project
 #
 # This library is free software; you can redistribute it and/or
@@ -25,9 +25,6 @@
 Build binary for windows with cx_freeze
 """
 
-# from distutils.core import setup
-# import py2exe
-
 from cx_Freeze import setup, Executable
 
 import sys
@@ -39,7 +36,6 @@ from Libs import Settings
 
 # Initialize settings module
 Settings.initialize()
-# settings = Settings.instance()
 
 # prepare the build date
 today = datetime.datetime.today()
@@ -54,22 +50,22 @@ versionFile = "%s/VERSION" % Settings.getDirExec()
 # Inspect all files to package
 
 # adding java8 setup
-Java8_Path = "%s/Bin/Java8/" % Settings.getDirExec()
-Java8_Files = [ f for f in os.listdir(Java8_Path) if os.path.isfile(os.path.join(Java8_Path,f)) ]
+# Java8_Path = "%s/Bin/Java8/" % Settings.getDirExec()
+# Java8_Files = [ f for f in os.listdir(Java8_Path) if os.path.isfile(os.path.join(Java8_Path,f)) ]
 
 # adding sikuli files
-Sikuli_Path = "%s/Bin/Sikuli/" % Settings.getDirExec()
-Sikuli_Files = [ f for f in os.listdir(Sikuli_Path) if os.path.isfile(os.path.join(Sikuli_Path,f)) ]
+# Sikuli_Path = "%s/Bin/Sikuli/" % Settings.getDirExec()
+# Sikuli_Files = [ f for f in os.listdir(Sikuli_Path) if os.path.isfile(os.path.join(Sikuli_Path,f)) ]
 
 # adding selenium
-Selenium3_Path = "%s/Bin/Selenium3/" % Settings.getDirExec()
-Selenium3_Files = [ f for f in os.listdir(Selenium3_Path) if os.path.isfile(os.path.join(Selenium3_Path,f)) ]
-Selenium2_Path = "%s/Bin/Selenium2/" % Settings.getDirExec()
-Selenium2_Files = [ f for f in os.listdir(Selenium2_Path) if os.path.isfile(os.path.join(Selenium2_Path,f)) ]
+# Selenium3_Path = "%s/Bin/Selenium3/" % Settings.getDirExec()
+# Selenium3_Files = [ f for f in os.listdir(Selenium3_Path) if os.path.isfile(os.path.join(Selenium3_Path,f)) ]
+# Selenium2_Path = "%s/Bin/Selenium2/" % Settings.getDirExec()
+# Selenium2_Files = [ f for f in os.listdir(Selenium2_Path) if os.path.isfile(os.path.join(Selenium2_Path,f)) ]
 
 # adding adb
-Adb_Path = "%s/Bin/Adb/" % Settings.getDirExec()
-Adb_Files = [ f for f in os.listdir(Adb_Path) if os.path.isfile(os.path.join(Adb_Path,f)) ]
+# Adb_Path = "%s/Bin/Adb/" % Settings.getDirExec()
+# Adb_Files = [ f for f in os.listdir(Adb_Path) if os.path.isfile(os.path.join(Adb_Path,f)) ]
 
 # system
 Dlls_Path = "%s/Dlls/" % Settings.getDirExec()
@@ -111,22 +107,22 @@ else:
         Mydata_files.append( ( '%s/%s' % (Dlls_Path, f), '%s' % f  ) ) 
 
 # adb
-for f in Adb_Files:
-    Mydata_files.append( ( '%s/%s' % (Adb_Path, f) , 'Bin/Adb/%s' % f ) ) 
+# for f in Adb_Files:
+    # Mydata_files.append( ( '%s/%s' % (Adb_Path, f) , 'Bin/Adb/%s' % f ) ) 
 
 # selenium
-for f in Selenium3_Files:
-    Mydata_files.append( ( '%s/%s' % (Selenium3_Path, f), 'Bin/Selenium3/%s' %f ) ) 
-for f in Selenium2_Files:
-    Mydata_files.append( ( '%s/%s' % (Selenium2_Path, f), 'Bin/Selenium2/%s' %f ) ) 
+# for f in Selenium3_Files:
+    # Mydata_files.append( ( '%s/%s' % (Selenium3_Path, f), 'Bin/Selenium3/%s' %f ) ) 
+# for f in Selenium2_Files:
+    # Mydata_files.append( ( '%s/%s' % (Selenium2_Path, f), 'Bin/Selenium2/%s' %f ) ) 
 
 # java 8
-for f in Java8_Files:
-    Mydata_files.append( ( '%s/%s' % (Java8_Path, f) , 'Bin/Java8/%s' %f ) ) 
+# for f in Java8_Files:
+    # Mydata_files.append( ( '%s/%s' % (Java8_Path, f) , 'Bin/Java8/%s' %f ) ) 
     
 # sikuli
-for f in Sikuli_Files:
-    Mydata_files.append( (  '%s/%s' % (Sikuli_Path, f) , 'Bin/Sikuli/%s' %f ) ) 
+# for f in Sikuli_Files:
+    # Mydata_files.append( (  '%s/%s' % (Sikuli_Path, f) , 'Bin/Sikuli/%s' %f ) ) 
 
 # Prepare the build options
 base = None

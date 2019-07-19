@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------------------------------
-# Copyright (c) 2010-2018 Denis Machard
+# Copyright (c) 2010-2019 Denis Machard
 # This file is part of the extensive automation project
 #
 # This library is free software; you can redistribute it and/or
@@ -72,7 +72,6 @@ REG_CONN_REFUSED        =   5
 WS_HANDSHAKE_FAILED     =   6
 
 TOOL_AGENT=0
-TOOL_PROBE=1
 
 class TestThread(threading.Thread):
     """
@@ -290,27 +289,16 @@ class Tool(NetLayerLib.ClientAgent):
         """
         try:
             if request['cmd'] == Messages.RSQ_CMD:
-            ############################################################
                 _body_ = request['body']
                 if 'cmd' in _body_:
                     self.trace( 'On request, receiving <-- CMD: %s' % _body_['cmd'] )
                     
-                    if _body_['cmd'] == Messages.CMD_START_PROBE:
-                        if _body_['opts']['args'] == '':
-                            _body_['opts']['args'] = "{}"
-                        _body_['opts']['args'] = eval(_body_['opts']['args'])
-                        self.onInitialize( tid, _body_['opts'] )
-                    
-                    elif _body_['cmd'] == Messages.CMD_STOP_PROBE:
-                        self.onStop( tid, _body_['opts'] )
-                    
-                    else:
-                        self.error( 'Cmd unknown %s' % _body_['cmd'])
-                        rsp = {'cmd': _body_['cmd'], 'res': Messages.CMD_ERROR }
-                        NetLayerLib.ClientAgent.failed(self, tid, body = rsp )
+                    self.error( 'Cmd unknown %s' % _body_['cmd'])
+                    rsp = {'cmd': _body_['cmd'], 'res': Messages.CMD_ERROR }
+                    NetLayerLib.ClientAgent.failed(self, tid, body = rsp )
                 else:
                     self.error( 'Cmd is missing')
-            ############################################################
+                    
             elif request['cmd'] == Messages.RSQ_NOTIFY:
                 self.onNotify(client, tid, request=request['body'])
             else:
@@ -556,14 +544,9 @@ class Tool(NetLayerLib.ClientAgent):
         self.info("Connection successful")
         if self.wsSupport:
             self.info("Do ws handshake")
-            if self.getTypeClientAgent() ==  NetLayerLib.TYPE_AGENT_AGENT:
-                wspath = Settings.get( 'Server', 'websocket-path' )
-                if self.sslSupport:
-                    wspath = Settings.get( 'Server', 'websocket-secure-path' )
-            else:
-                wspath = Settings.get( 'Server', 'websocket-path-probe' )
-                if self.sslSupport:
-                    wspath = Settings.get( 'Server', 'websocket-secure-path-probe' )
+            wspath = Settings.get( 'Server', 'websocket-path' )
+            if self.sslSupport:
+                wspath = Settings.get( 'Server', 'websocket-secure-path' )
             self.handshakeWebSocket(resource=wspath, hostport=self.controllerIp)
         else:
             self.doRegistration()
@@ -575,14 +558,9 @@ class Tool(NetLayerLib.ClientAgent):
         self.info("Connection successful")
         if self.wsSupport:
             self.info("Do ws handshake")
-            if self.getTypeClientAgent() ==  NetLayerLib.TYPE_AGENT_AGENT:
-                wspath = Settings.get( 'Server', 'websocket-path' )
-                if self.sslSupport:
-                    wspath = Settings.get( 'Server', 'websocket-secure-path' )
-            else:
-                wspath = Settings.get( 'Server', 'websocket-path-probe' )
-                if self.sslSupport:
-                    wspath = Settings.get( 'Server', 'websocket-secure-path-probe' )
+            wspath = Settings.get( 'Server', 'websocket-path' )
+            if self.sslSupport:
+                wspath = Settings.get( 'Server', 'websocket-secure-path' )
             self.handshakeWebSocket(resource=wspath, hostport=self.controllerIp)
         else:
             self.doRegistration()
@@ -593,7 +571,8 @@ class Tool(NetLayerLib.ClientAgent):
         """
         self.regRequest = threading.Event()
         self.info("Handshake OK")
-        self.regThread = threading.Thread(target=self.doRegistration, args=(self.regRequest,))
+        self.regThread = threading.Thread(target=self.doRegistration, 
+                                          args=(self.regRequest,))
         self.regThread.start()
 
     def onRegistrationSuccessful(self):

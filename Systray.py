@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------------------------------
-# Copyright (c) 2010-2018 Denis Machard
+# Copyright (c) 2010-2019 Denis Machard
 # This file is part of the extensive automation project
 #
 # This library is free software; you can redistribute it and/or
@@ -66,7 +66,6 @@ from Translations import Translations
 import Mobile
 import Core.GenericTool as GenericTool
 
-
 # name of the main developer
 __AUTHOR__ = 'Denis Machard'
 # email of the main developer
@@ -74,9 +73,9 @@ __EMAIL__ = 'd.machard@gmail.com'
 # project start in year
 __BEGIN__ = "2010"
 # year of the latest build
-__END__="2018"
+__END__="2019"
 # date and time of the buid
-__BUILDTIME__="29/07/2018 12:21:39"
+__BUILDTIME__="18/07/2019 14:34:57"
 # Redirect stdout and stderr to log file only on production
 REDIRECT_STD=True
 
@@ -139,20 +138,35 @@ else: # python 3 support
         sys.stderr = open( "%s/Logs/systray_sdterr.log" % QtHelper.dirExec() ,"a", 1) # 1 to select line buffering (only usable in text mode)
         sys.excepthook = Logger.log_exception
 
-from Embedded import * # for exe mode 
+
+# loading all plugins
+installed = []
+for f in os.listdir( "%s/Plugins/" % QtHelper.dirExec() ):
+    if f == "__pycache__": continue
+    if os.path.isdir( "%s/Plugins/%s" % (QtHelper.dirExec(),f) ):
+        installed.append('"%s"' % f)
+
+# update the init
+f = open( '%s/Plugins/__init__.py' % QtHelper.dirExec(), 'w')
+f.write( "__all__ = [%s]" % ",".join(installed) )
+f.close()
+
 # loading all plugins
 plugins = {}
-for pluginName in dir(__import__( "Embedded" )):
-    if not pluginName.startswith('__') and not pluginName.endswith('__'):
-        pkg =  __import__( "Embedded.%s" % pluginName )
-        for listing in dir(pkg):
-            obj = getattr(pkg, listing)
-            if inspect.ismodule(obj):
-                plugins[(obj.__TOOL_TYPE__,obj.__TYPE__)] = obj
-                
-PLUGINS_AGENT_EXTERNAL = {}
-PLUGINS_PROBE_EXTERNAL = {}
 
+from Plugins import *
+
+# plugins = {} 
+pkg =  __import__( "Plugins" )
+for listing in dir(pkg):
+    obj = getattr(pkg, listing)
+    if inspect.ismodule(obj):
+        for listing2 in dir(obj):
+            if listing2.endswith("Agent"):
+                obj2 = getattr(obj, listing2)
+                if inspect.ismodule(obj2):
+                    plugins[(obj2.__TOOL_TYPE__,obj2.__TYPE__)] = obj2
+            
 def str2bool(value):
     """
     Convert str two bool
@@ -161,101 +175,10 @@ def str2bool(value):
 
         
 TOOL_AGENT=0
-TOOL_PROBE=1  
-TOOL_EXT_AGENT=2
-TOOL_EXT_PROBE=3  
 
 TOOLS_DESCR = {
-    TOOL_AGENT: "embedded agent",
-    TOOL_PROBE: "embedded probe",
-    TOOL_EXT_AGENT: "external agent",
-    TOOL_EXT_PROBE: "external agent"
+    TOOL_AGENT: "agent",
 }
-
-class PluginProcess(QProcess):
-    """
-    Plugin process
-    """
-    DataReceived = pyqtSignal(bytes, object)
-    def __init__(self, parent, cmd, toolPage, tmpArea):
-        """
-        """
-        QProcess.__init__(self, parent)
-        self.__cmd = cmd
-        self.toolPage = toolPage
-        self.tmpArea = tmpArea
-        self.setProcessChannelMode(QProcess.MergedChannels)   
-        self.readyReadStandardOutput.connect(self.onData)
-        self.keepAliveTimer = QTimer(parent)
-        self.keepAliveTimer.timeout.connect(self.sendKeepAlive)
-        self.keepAliveTimer.setInterval(10000)
-        
-    def widgetPage(self):
-        """
-        Return the tool page widget
-        """
-        return self.toolPage
-        
-    def onData(self):
-        """
-        On data received
-        """
-        # d -> qbytearray
-        d = self.readAllStandardOutput()
-        self.DataReceived.emit(d.data(), self)
-        
-    def startPlugin(self):
-        """
-        Start the plugin
-        """
-        self.start(self.__cmd)
-        
-    def startKeepAlive(self):
-        """
-        Start the keepalive
-        """
-        self.keepAliveTimer.start()
-        
-    def sendKeepAlive(self):
-        """
-        Send keep alive
-        """
-        self.sendCommand(cmd='keepalive')
-        
-    def sendCommand(self, cmd, data='', more={}):
-        """
-        Send command
-        """
-        inData = False
-        msg = {'cmd': cmd }
-        
-        # save data to temp area
-        idFile = ''
-        
-        
-        if len(data):
-            try:
-                idFile = "%s" % uuid.uuid4()
-                pluginDataFile = '%s/%s' % (self.tmpArea, idFile)
-                with open( pluginDataFile, mode='w') as myfile:
-                    myfile.write( json.dumps( data )  )
-                inData = True
-            except Exception as e:
-                print("unable to write plugin data file: %s" % e)
-
-        msg.update( { 'in-data': inData } )
-         
-        # add data parameters
-        if inData: msg.update( { 'data-id': idFile } )
-             
-        # add more params
-        msg.update(more)
-        
-        # send command
-        datagram = json.dumps( msg ) 
-        datagramEncoded = base64.b64encode( bytes(datagram, "utf8")  )
-        
-        self.write( datagramEncoded + b"\n\n" )
 
 class QListItemEnhanced(QListWidgetItem):
     """
@@ -286,10 +209,7 @@ class QListItemEnhanced(QListWidgetItem):
         """
         Create the qt widget
         """
-        if self.toolType == TOOL_AGENT or self.toolType == TOOL_EXT_AGENT :
-            self.setIcon(QIcon(':/agent.png'))
-        else:
-            self.setIcon(QIcon(':/probe.png'))
+        self.setIcon(QIcon(':/agent.png'))
         if self.proxyEnable:
             self.setText( "[Addr:%s Proxy:Yes][%s] %s - %s" % ( self.toolIp, 
                                                                 TOOLS_DESCR[self.toolType], 
@@ -388,8 +308,6 @@ class ToolPage(QWidget):
         self.nameEdit.setEnabled(False)
         self.descriptionEdit = QLineEdit( )
         self.descriptionEdit.setEnabled(False)
-        self.typeEdit = QLineEdit()
-        self.typeEdit.setEnabled(False)
         
         self.remoteServerEdit = QLineEdit( )
         self.remoteServerEdit.setEnabled(False)
@@ -398,9 +316,6 @@ class ToolPage(QWidget):
         
         toolLayout.addWidget( QLabel("Name:"), 1, 1 )
         toolLayout.addWidget(self.nameEdit, 1, 2)
-        
-        toolLayout.addWidget(QLabel("Type:"), 2, 1)
-        toolLayout.addWidget(self.typeEdit, 2, 2)
         
         toolLayout.addWidget( QLabel("Description:"), 4, 1)
         toolLayout.addWidget(self.descriptionEdit, 4, 2)
@@ -719,7 +634,7 @@ class ToolPage(QWidget):
         
         self.nameEdit.setText(toolName)
         self.descriptionEdit.setText(toolDescr)
-        self.typeEdit.setText(toolPlugin)
+        # self.typeEdit.setText(toolPlugin)
         if toolIp is not None:  self.remoteServerEdit.setText(toolIp)
 
         if "adb" in toolPlugin:
@@ -775,10 +690,9 @@ class ToolPage(QWidget):
         if not autoReconnect: self.currentReconnect = 0
         if autoStart: self.LogWarning.emit('<< Auto connect on startup activated')
         
-        if self.toolType == TOOL_AGENT or self.toolType == TOOL_EXT_AGENT:   
-            self.addLogSuccess( ">> Starting agent '%s...'" % self.toolName)
-        else:
-            self.addLogSuccess( ">> Starting probe '%s...'" % self.toolName)
+        self.addLogSuccess( ">> Starting agent '%s...'" % self.toolName)
+        # else:
+            # self.addLogSuccess( ">> Starting probe '%s...'" % self.toolName)
         self.trace("tool name: %s" % self.toolName)
         self.trace("tool type: %s" % self.toolPlugin)
         self.trace("tool descr: %s" % self.toolDescr)
@@ -804,8 +718,8 @@ class ToolPage(QWidget):
         if ( self.toolType, toolPlugin) in plugins:
             if self.toolType == TOOL_AGENT:
                 self.info("Initialize %s agent..." % str(toolPlugin) )
-            else:
-                self.info("Initialize %s probe..." % str(toolPlugin) )
+            # else:
+                # self.info("Initialize %s probe..." % str(toolPlugin) )
 
             try:
                 self.toolObj = plugins[(self.toolType, toolPlugin)].initialize( 
@@ -824,39 +738,39 @@ class ToolPage(QWidget):
             except Exception as e:
                 self.LogError.emit("<< Unable to initialize plugin: %s" %  e)
                 
-        elif toolPlugin in PLUGINS_AGENT_EXTERNAL:
-            self.toolObj = GenericTool.Tool( 
-                                            controllerIp=str(self.controllerIp), 
-                                            controllerPort=int(self.controllerPort), 
-                                            toolName=str(self.toolName), 
-                                            toolDesc=str(self.toolDescr), 
-                                            defaultTool=False, 
-                                            supportProxy=self.proxyEnable, 
-                                            proxyIp=str(self.proxyIp), 
-                                            proxyPort=int(self.proxyPort), 
-                                            sslSupport=str2bool(Settings.instance().get( 'Server', 'ssl-support' )),
-                                            toolType = "Agent", 
-                                            fromCmd=False, 
-                                            name=toolPlugin.title()
-                            )
-            initPlugin = True
+        # elif toolPlugin in PLUGINS_AGENT_EXTERNAL:
+            # self.toolObj = GenericTool.Tool( 
+                                            # controllerIp=str(self.controllerIp), 
+                                            # controllerPort=int(self.controllerPort), 
+                                            # toolName=str(self.toolName), 
+                                            # toolDesc=str(self.toolDescr), 
+                                            # defaultTool=False, 
+                                            # supportProxy=self.proxyEnable, 
+                                            # proxyIp=str(self.proxyIp), 
+                                            # proxyPort=int(self.proxyPort), 
+                                            # sslSupport=str2bool(Settings.instance().get( 'Server', 'ssl-support' )),
+                                            # toolType = "Agent", 
+                                            # fromCmd=False, 
+                                            # name=toolPlugin.title()
+                            # )
+            # initPlugin = True
             
-        elif toolPlugin in PLUGINS_PROBE_EXTERNAL:
-            self.toolObj = GenericTool.Tool( 
-                                            controllerIp=str(self.controllerIp), 
-                                            controllerPort=int(self.controllerPort), 
-                                            toolName=str(self.toolName), 
-                                            toolDesc=str(self.toolDescr), 
-                                            defaultTool=False, 
-                                            supportProxy=self.proxyEnable, 
-                                            proxyIp=str(self.proxyIp), 
-                                            proxyPort=int(self.proxyPort), 
-                                            sslSupport=str2bool(Settings.instance().get( 'Server', 'ssl-support' )),
-                                            toolType = "Probe", 
-                                            fromCmd=False, 
-                                            name=toolPlugin.title()
-                            )
-            initPlugin = True
+        # elif toolPlugin in PLUGINS_PROBE_EXTERNAL:
+            # self.toolObj = GenericTool.Tool( 
+                                            # controllerIp=str(self.controllerIp), 
+                                            # controllerPort=int(self.controllerPort), 
+                                            # toolName=str(self.toolName), 
+                                            # toolDesc=str(self.toolDescr), 
+                                            # defaultTool=False, 
+                                            # supportProxy=self.proxyEnable, 
+                                            # proxyIp=str(self.proxyIp), 
+                                            # proxyPort=int(self.proxyPort), 
+                                            # sslSupport=str2bool(Settings.instance().get( 'Server', 'ssl-support' )),
+                                            # toolType = "Probe", 
+                                            # fromCmd=False, 
+                                            # name=toolPlugin.title()
+                            # )
+            # initPlugin = True
             
         else:
             self.LogError.emit("<< plugin type not supported: %s" %  self.toolPlugin)
@@ -882,35 +796,9 @@ class ToolPage(QWidget):
             self.toolObj.onTakeScreenshot = self.onTakeScreenshot
             self.toolObj.userConfirm = self.onUserConfirm
             self.toolObj.onDeviceReady = self.onDeviceReady
-            if self.toolType == TOOL_EXT_AGENT:
-                self.toolObj.onAgentNotify = self.onAgentNotify
-                self.toolObj.onAgentReset = self.onAgentReset
-                self.toolObj.onAgentInit = self.onAgentInit
-                self.toolObj.onAgentAlive = self.onAgentAlive
-                self.toolObj.onStart = self.onStartingProbe
-                self.toolObj.onStop = self.onStoppingProbe
                 
             self.toolObj.startCA()
 
-    def onStartingProbe(self, callid, tid, data):
-        """
-        On starting the probe event
-        """
-        if self.pluginProcess is None: 
-            return
-        
-        self.pluginProcess.sendCommand(cmd="start-probe", data='', 
-                                       more={'callid': tid, 'data': data, 'tid': tid})
-        
-    def onStoppingProbe(self,  tid, data):
-        """
-        On stopping probe event
-        """
-        if self.pluginProcess is None: 
-            return
-        
-        self.pluginProcess.sendCommand(cmd="stop-probe", data='', more={'data': data, 'tid': tid})
-        
     def onAgentNotify(self, client, tid, request): 
         """
         On agent notify event
@@ -1141,20 +1029,12 @@ class ToolPage(QWidget):
         self.toolObj.regRequest = None
         self.toolObj.prepareTempDir()
         
-        if self.toolType == TOOL_AGENT or self.toolType == TOOL_EXT_AGENT:  
-            self.LogSuccess.emit("<< Agent successfully registered.")
-        else:
-            self.LogSuccess.emit("<< Probe successfully registered.")
-            
+        self.LogSuccess.emit("<< Agent successfully registered.")
+
         self.mainApp.updateTabName(self, tabText="%s (starting)" % self.toolName)
-        
-        if self.toolType == TOOL_EXT_AGENT or self.toolType == TOOL_EXT_PROBE:
 
-            self.StartExternalTool.emit(self, self.toolType, self.toolPlugin, self.toolName)
-
-        else:
-            self.mainApp.setTrayIconToolTip( "(Running)")
-            self.toolObj.initAfterRegistration()
+        self.mainApp.setTrayIconToolTip( "(Running)")
+        self.toolObj.initAfterRegistration()
         
 class ComboBoxEnhanced(QComboBox):
     """
@@ -1192,46 +1072,7 @@ class ComboBoxEnhanced(QComboBox):
         item.setFont(font)
         
         self.model().appendRow(item)
-        
-    def addProbe(self, name):
-        """
-        Add probe to the list
-        """
-        item = QStandardItem( " %s" % name)
-        item.setData(TOOL_PROBE)
-        
-        font = item.font()
-        font.setPixelSize (15)
-        item.setFont(font)
-        
-        self.model().appendRow(item)
-        
-    def addExtAgent(self, name):
-        """
-        Add external agent to the list
-        """
-        item = QStandardItem( " %s" % name)
-        item.setData(TOOL_EXT_AGENT)
-        
-        font = item.font()
-        font.setPixelSize (15)
-        item.setFont(font)
-        
-        self.model().appendRow(item)
-        
-    def addExtProbe(self, name):
-        """
-        Add external probe to the list
-        """
-        item = QStandardItem( " %s" % name)
-        item.setData(TOOL_EXT_PROBE)
-        
-        font = item.font()
-        font.setPixelSize (15)
-        item.setFont(font)
-        
-        self.model().appendRow(item)
-        
+
 class PluginObj(object):
     """
     Plugin object
@@ -1532,44 +1373,44 @@ class DeployPage(QWidget):
             if not plugType: tmp_agt.append( "%s" % plugId )    
         tmp_agt = sorted(tmp_agt)
         
-        tmp_prb = []
-        for pluginId, pluginObj in plugins.items():
-            plugType, plugId  = pluginId
-            if plugType: tmp_prb.append( "%s" % plugId )
-        tmp_prb = sorted(tmp_prb)
+        # tmp_prb = []
+        # for pluginId, pluginObj in plugins.items():
+            # plugType, plugId  = pluginId
+            # if plugType: tmp_prb.append( "%s" % plugId )
+        # tmp_prb = sorted(tmp_prb)
         
         # new in v8.2
-        tmp_ext_agt = []
-        for pluginId, plugMore in PLUGINS_AGENT_EXTERNAL.items():
-            plugPath, plugExe, pluginCfg = plugMore
-            tmp_ext_agt.append( "%s" % pluginCfg["plugin"]["name"].lower() )
-        tmp_ext_agt = sorted(tmp_ext_agt)
+        # tmp_ext_agt = []
+        # for pluginId, plugMore in PLUGINS_AGENT_EXTERNAL.items():
+            # plugPath, plugExe, pluginCfg = plugMore
+            # tmp_ext_agt.append( "%s" % pluginCfg["plugin"]["name"].lower() )
+        # tmp_ext_agt = sorted(tmp_ext_agt)
         
-        tmp_ext_prb = []
-        for pluginId, plugMore in PLUGINS_PROBE_EXTERNAL.items():
-            plugPath, plugExe, pluginCfg = plugMore
-            tmp_ext_prb.append( "%s" % pluginCfg["plugin"]["name"].lower() )
-        tmp_ext_prb = sorted(tmp_ext_prb)
+        # tmp_ext_prb = []
+        # for pluginId, plugMore in PLUGINS_PROBE_EXTERNAL.items():
+            # plugPath, plugExe, pluginCfg = plugMore
+            # tmp_ext_prb.append( "%s" % pluginCfg["plugin"]["name"].lower() )
+        # tmp_ext_prb = sorted(tmp_ext_prb)
         # end of new
             
 
-        self.typeComboBox.addSeparator(label="Default Agents")
+        # self.typeComboBox.addSeparator(label="Default Agents")
         for row in tmp_agt:
             self.typeComboBox.addAgent(row)
 
-        if len(tmp_ext_agt):
-            self.typeComboBox.addSeparator(label="External Agent(s)")
-            for row in tmp_ext_agt:
-                self.typeComboBox.addExtAgent(row)
+        # if len(tmp_ext_agt):
+            # self.typeComboBox.addSeparator(label="External Agent(s)")
+            # for row in tmp_ext_agt:
+                # self.typeComboBox.addExtAgent(row)
 
-        self.typeComboBox.addSeparator(label="Default Probes")
-        for row in tmp_prb:
-            self.typeComboBox.addProbe(row)
+        # self.typeComboBox.addSeparator(label="Default Probes")
+        # for row in tmp_prb:
+            # self.typeComboBox.addProbe(row)
 
-        if len(tmp_ext_prb):
-            self.typeComboBox.addSeparator(label="External Probe(s)")
-            for row in tmp_ext_prb:
-                self.typeComboBox.addExtProbe(row)
+        # if len(tmp_ext_prb):
+            # self.typeComboBox.addSeparator(label="External Probe(s)")
+            # for row in tmp_ext_prb:
+                # self.typeComboBox.addExtProbe(row)
 
         self.typeComboBox.setCurrentIndex(1)
         self.onTypeComboChanged(itemIndex = self.typeComboBox.currentIndex())
@@ -1691,13 +1532,13 @@ class DeployPage(QWidget):
                 pluginDetected = pluginObj
                 break
                 
-        if pluginDetected is None:
-            for plugId, plugMore in PLUGINS_AGENT_EXTERNAL.items():
-                plugPath, plugExe, pluginCfg  = plugMore
-                if pluginType == TOOL_EXT_AGENT and pluginCfg["plugin"]["name"].lower() == pluginId.lower():
-                    pObj = PluginObj(pluginCfg["plugin"]['resume'], pluginCfg["plugin"]['with-ide'])
-                    pluginDetected = pObj
-                    break
+        # if pluginDetected is None:
+            # for plugId, plugMore in PLUGINS_AGENT_EXTERNAL.items():
+                # plugPath, plugExe, pluginCfg  = plugMore
+                # if pluginType == TOOL_EXT_AGENT and pluginCfg["plugin"]["name"].lower() == pluginId.lower():
+                    # pObj = PluginObj(pluginCfg["plugin"]['resume'], pluginCfg["plugin"]['with-ide'])
+                    # pluginDetected = pObj
+                    # break
                     
         if pluginDetected is not None:
             self.typeLabel.setText(TOOLS_DESCR[pluginType])
@@ -1866,22 +1707,22 @@ class DeployPage(QWidget):
         """
         toolName = self.nameEdit.text()
         if not len(toolName):
-            QMessageBox.critical(None, "Start Agent/Probe", "Agent/probe name is missing!")
+            QMessageBox.critical(None, "Start Agent", "Agen name is missing!")
             return
         
         toolDescr = self.descriptionEdit.text()
         if not len(toolDescr):
-            QMessageBox.critical(None, "Start Agent/Probe", "Agent/probe description is missing!")
+            QMessageBox.critical(None, "Start Agent", "Agent description is missing!")
             return  
             
         serverIp = self.controlerIpEdit.text()
         if not len(serverIp):
-            QMessageBox.critical(None, "Start Agent/Probe", "Test server IP is missing!")
+            QMessageBox.critical(None, "Start Agent", "Test server IP is missing!")
             return     
             
         serverPort = self.controlerPortEdit.text()
         if not len(serverPort):
-            QMessageBox.critical(None, "Start Agent/Probe", "Test server port is missing!")
+            QMessageBox.critical(None, "Start Agent", "Test server port is missing!")
             return      
             
         proxyIp = self.proxyHttpAddrEdit.text()
@@ -1889,10 +1730,10 @@ class DeployPage(QWidget):
         supportProxy = self.withProxyCheckBox.isChecked()
         if supportProxy:
             if not len(proxyIp):
-                QMessageBox.critical(None, "Start Agent/Probe", "Proxy IP is missing!")
+                QMessageBox.critical(None, "Start Agent", "Proxy IP is missing!")
                 return 
             if not len(proxyPort):
-                QMessageBox.critical(None, "Start Agent/Probe", "Proxy port is missing!")
+                QMessageBox.critical(None, "Start Agent", "Proxy port is missing!")
                 return  
 
         pluginName = self.typeComboBox.currentText()
@@ -1936,16 +1777,8 @@ class DeployPage(QWidget):
             self.listTools.addItem( listItem )
 
         # emit the signal
-        if internalType == TOOL_AGENT:
-            self.DeployTool.emit(TOOL_AGENT)
-        elif internalType == TOOL_PROBE:
-            self.DeployTool.emit(TOOL_PROBE)
-        elif internalType == TOOL_EXT_AGENT:
-            self.DeployTool.emit(TOOL_EXT_AGENT)
-        elif internalType == TOOL_EXT_PROBE:
-            self.DeployTool.emit(TOOL_EXT_PROBE)
-        else:
-            pass
+        self.DeployTool.emit(TOOL_AGENT)
+
             
 class Window(QDialog):
     """
@@ -1958,22 +1791,13 @@ class Window(QDialog):
         super(Window, self).__init__()
 
         self.mainPage = None
-        
-        # new in 8.2
-        self.pluginsStarted = {}
-        self.pluginsBuffers = {}
-        # loading plugin
-        self.loadingPlugins()
-        # end of new
-        
+
         self.createDialog()
         self.createActions()
         self.createTrayIcon()
         self.createConnections()
         self.createToolbar()
 
-        self.loadingPluginsActions()
-        
         # cleanup temp folder
         if sys.platform == "win32" :
             dirpath = "%s\\%s\\" % (Settings.getDirExec(), Settings.get( 'Paths', 'tmp' ))
@@ -1994,88 +1818,6 @@ class Window(QDialog):
         # init tools from settings
         self.mainPage.initListTools()
 
-    def loadingPlugins(self):
-        """
-        Loading all plugins
-        """
-        files=os.listdir("%s//Plugins//" % (QtHelper.dirExec()))
-        for x in files:
-            
-            curpath=os.path.join( "%s//Plugins//" % (QtHelper.dirExec()), x)
-            if not os.path.isfile( curpath ):
-                for y in os.listdir( curpath ):
-                    fullpath=os.path.join( "%s//Plugins//%s//%s" % (QtHelper.dirExec(), x, y) )
-                    if os.path.isfile(fullpath):
-                        if y.endswith(".exe"):
-                        
-                            # read the json config
-                            configJson = {}
-                            try:
-                                f = open("%s/config.json" % ( "%s//Plugins//%s//" % (QtHelper.dirExec(), x) ), "br" )
-                                configStr = f.read()
-                                if sys.version_info > (3,): # python 3 support
-                                    configJson = json.loads( str(configStr, "utf8") )
-                                else:
-                                    configJson = json.loads( configStr )
-                                f.close()
-                            except Exception as e:
-                                print(e)
-
-                            if configJson["plugin"]["type"] == "agent":
-                                pluginId = configJson["plugin"]["name"]
-                                PLUGINS_AGENT_EXTERNAL[pluginId.lower()] = ( "%s//Plugins//%s//" % (QtHelper.dirExec(), x), y, configJson)
-                            elif configJson["plugin"]["type"] == "probe":
-                                pluginId = x
-                                PLUGINS_PROBE_EXTERNAL[pluginId.lower()] = ( "%s//Plugins//%s//" % (QtHelper.dirExec(), x), y, configJson)
-                            else:
-                                pass    
-        
-    def loadingPluginsActions(self):
-        """
-        Loading all actions for plugins
-        """
-        for plugId, plugMore in PLUGINS_AGENT_EXTERNAL.items():
-            
-            plugPath, plugExe, pluginCfg = plugMore
-            
-            # read icon
-            icon = None
-            try:
-                f = open("%s/plugin.png" % (plugPath), "rb" )
-                icon = f.read()
-                f.close()
-            except Exception as e:
-                print(e)
-            
-            # read about
-            if icon is not None:
-                p = QPixmap()
-                p.loadFromData(icon, format="png")
-            
-                plugAction = QtHelper.createAction(parent=self, label="About\n%s Plugin" % pluginCfg["plugin"]["name"], icon=QIcon(p), 
-                                                    callback=self.onAboutPlugin, cb_arg= { 'plugId': plugId, 
-                                                                                           'plugPath': plugPath,
-                                                                                           'plugCfg': pluginCfg } )
-                self.dockToolbar.addAction(plugAction)
-            else:
-                plugAction =  QtHelper.createAction( parent=self, label="About\n%s Plugin" % pluginCfg["plugin"]["name"],
-                                                    callback=self.onAboutPlugin, cb_arg={ 'plugId': plugId, 
-                                                                                          'plugPath': plugPath,
-                                                                                          'plugCfg': pluginCfg} )
-                self.dockToolbar.addAction(plugAction)
-                
-    def onAboutPlugin(self, plugInfo):
-        """
-        About plugin event
-        """
-        plugId = plugInfo['plugId']
-        plugPath = plugInfo['plugPath']
-        plugCfg = plugInfo['plugCfg']
-
-        QMessageBox.information(self, "About %s Plugin" % plugCfg["plugin"]["name"], 
-                                    plugCfg["plugin"]['about'] % (plugCfg["plugin"]["name"],
-                                    plugCfg["plugin"]['version'], Settings.get( 'Common', 'name' )))
-   
     def createConnections(self):
         """
         Create qt connections
@@ -2090,126 +1832,6 @@ class Window(QDialog):
         if reason == QSystemTrayIcon.DoubleClick:
             self.showNormal()
 
-    def onStartExternalTool(self, toolPage, pluginType, pluginId, pluginName):
-        """
-        On start a external tool event
-        """
-        if pluginType == TOOL_EXT_AGENT:
-            plugPath, plugExe, pluginCfg  = PLUGINS_AGENT_EXTERNAL[pluginId]
-
-            p = PluginProcess(self, cmd='"%s/%s"' % (plugPath, plugExe), 
-                              toolPage=toolPage, 
-                              tmpArea=toolPage.plugin().getTemp())
-            toolPage.pluginProcess = p
-            p.DataReceived.connect(self.onPluginData)
-            p.startPlugin()
-            
-            self.updateTabName(toolPage, tabText="%s (running)" % pluginName)
-            
-        elif pluginType == TOOL_EXT_PROBE:
-            plugPath, plugExe, pluginCfg  = PLUGINS_PROBE_EXTERNAL[pluginId]
-            
-            p = PluginProcess(self, cmd='"%s/%s"' % (plugPath, plugExe), 
-                              toolPage=toolPage, 
-                              tmpArea=toolPage.plugin().getTemp())
-            toolPage.pluginProcess = p
-            p.DataReceived.connect(self.onPluginData)
-            p.startPlugin()
-            
-        else:
-            pass
-        
-    def onPluginData(self, data, plugin):
-        """
-        On data received from plugin
-        """
-        if plugin in self.pluginsBuffers:
-            self.pluginsBuffers[plugin] += data
-        else:
-            self.pluginsBuffers.update( {plugin: data } )
-            
-        pdus = self.pluginsBuffers[plugin].split(b"\r\n")
-        for pdu in pdus[:-1]:
-            try:
-                datagramDecoded = base64.b64decode(pdu)
-                if sys.version_info > (3,): # python 3 support
-                    messageJson = json.loads( str(datagramDecoded, "utf8") )
-                else:
-                    messageJson = json.loads( datagramDecoded )
-            except Exception as e:
-                pass
-            else:
-                self.onPluginMessage(msg=messageJson, plugProcess=plugin)
-        self.pluginsBuffers[plugin] = pdus[-1]
-        
-    def onPluginMessage(self, msg, plugProcess):
-        """
-        On message received from plugin
-        """
-        if msg['cmd'] == 'register' and msg['id'].lower() not in self.pluginsStarted :
-            if plugProcess.widgetPage().plugin() is None: return
-            
-            self.pluginsStarted.update( {msg['id'].lower() : (msg['name'], msg['type'], plugProcess ) } )
-            
-            plugProcess.sendCommand( cmd='registered', more={'tmp-path': plugProcess.toolPage.plugin().getTemp()} )
-            plugProcess.startKeepAlive()
-            self.setTrayIconToolTip( "(Running)")
-            
-        elif msg['cmd'] == 'log-warning' and msg['id'].lower() in self.pluginsStarted :
-            plugProcess.widgetPage().onToolLogWarningCalled(msg=msg['msg'])
-            
-        elif msg['cmd'] == 'log-success' and msg['id'].lower() in self.pluginsStarted :
-            plugProcess.widgetPage().onToolLogSuccessCalled(msg=msg['msg'])
-            
-        elif msg['cmd'] == 'log-error' and msg['id'].lower() in self.pluginsStarted :
-            plugProcess.widgetPage().onToolLogErrorCalled(msg=msg['msg'])
-            
-        elif msg['cmd'] in [ 'send-data', 'send-error', 'send-notify' ] and msg['id'].lower() in self.pluginsStarted :
-            if plugProcess.widgetPage().plugin() is None: return
-            
-            pluginJson = ''
-            if msg['in-data']:
-                # read the file
-                f = open( '%s/%s' % (plugProcess.toolPage.plugin().getTemp(), msg['data-id'] ), 'r')
-                pluginData = f.read()
-                f.close()
-
-                pluginJson = json.loads( pluginData )
-                
-                # delete them
-                os.remove( '%s/%s' % (plugProcess.toolPage.plugin().getTemp(), msg['data-id']  ) )
-                
-            if msg['cmd'] == 'send-notify' and msg['id'].lower() in self.pluginsStarted :
-                if plugProcess.widgetPage().plugin() is None: return
-                
-                plugProcess.widgetPage().plugin().sendNotify(request=msg['request'], data=pluginJson)
-                
-            elif msg['cmd'] == 'send-data' and msg['id'].lower() in self.pluginsStarted :
-                if plugProcess.widgetPage().plugin() is None: return
-                
-                plugProcess.widgetPage().plugin().sendData(request=msg['request'], data=pluginJson)
-                
-            elif msg['cmd'] == 'send-error' and msg['id'].lower() in self.pluginsStarted :
-                if plugProcess.widgetPage().plugin() is None: return
-                
-                plugProcess.widgetPage().plugin().sendError(request=msg['request'], data=pluginJson)
-            else:
-                pass
-        
-        elif msg['cmd'] == "probe-started"  and msg['id'].lower() in self.pluginsStarted :
-            if plugProcess.widgetPage().plugin() is None: return
-            
-            plugProcess.widgetPage().plugin().startResponse(tid=msg['tid'], body=msg['body'])
-            
-        elif msg['cmd'] == "probe-stopped"  and msg['id'].lower() in self.pluginsStarted :
-            if plugProcess.widgetPage().plugin() is None: return
-            
-            plugProcess.widgetPage().plugin().stopResponse(tid=msg['tid'], body = msg['body'], 
-                                                            additional = msg['additional'], 
-                                                            dataToSend=msg['dataToSend'])
-            
-        else:
-            pass
         
     def automaticDeployTool(self, toolType, toolName, toolPlugin, toolDescription, 
                                 toolIp=None, toolPort=None,  proxyEnable=False,
@@ -2220,8 +1842,7 @@ class Window(QDialog):
         toolPage = ToolPage(parent=self, delayStartup=int(Settings.get( 'Common' ,'delay-startup')) )
         toolPage.StopTool.connect(self.onStopTool)
         toolPage.TakeScreenshot.connect(self.onTakeScreenshot)
-        toolPage.StartExternalTool.connect(self.onStartExternalTool)
-        
+
         # configure params
         toolPage.setTool(   
                             toolName=toolName, 
@@ -2253,9 +1874,7 @@ class Window(QDialog):
         
         # select icon 
         toolIcon = QIcon(':/agent.png')
-        if toolType == TOOL_PROBE or toolType == TOOL_EXT_PROBE: 
-            toolIcon = QIcon(':/probe.png')
-        
+
         # create the tab and set as current
         self.mainTab.addTab( toolPage, toolIcon, "%s (registering)" % toolName )
         self.mainTab.setCurrentIndex( self.mainTab.count()-1 )
@@ -2273,13 +1892,12 @@ class Window(QDialog):
         
     def deployTool(self, toolType):
         """
-        Deploy a tool (agent or probe)
+        Deploy a tool agent
         """
         toolPage = ToolPage(parent=self)
         toolPage.StopTool.connect(self.onStopTool)
         toolPage.TakeScreenshot.connect(self.onTakeScreenshot)
-        toolPage.StartExternalTool.connect(self.onStartExternalTool)
-        
+
         # configure params
         toolPage.setTool(   
                             toolName=self.mainPage.getToolName(), 
@@ -2298,9 +1916,7 @@ class Window(QDialog):
         
         # select icon 
         toolIcon = QIcon(':/agent.png')
-        if toolType == TOOL_PROBE or toolType == TOOL_EXT_PROBE: 
-            toolIcon = QIcon(':/probe.png')
-        
+
         # create the tab and set as current
         self.mainTab.addTab( toolPage, 
                              toolIcon, 
@@ -2619,11 +2235,6 @@ class Window(QDialog):
         """
         On quit
         """
-        # cleanup all plugin process
-        for pluginId, pluginInfos in self.pluginsStarted.items():
-            pluginName, pluginType, pluginProcess = pluginInfos
-            pluginProcess.kill()
-            
         # hide the tray icon
         self.trayIcon.hide()  
         # quit

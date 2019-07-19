@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # -------------------------------------------------------------------
-# Copyright (c) 2010-2018 Denis Machard
+# Copyright (c) 2010-2019 Denis Machard
 # This file is part of the extensive automation project
 #
 # This library is free software; you can redistribute it and/or
@@ -56,20 +56,44 @@ if not os.path.exists(settingsFile):
 Settings.initialize()
 
 # loading all plugins
-plugins = {}
-# for pluginID, pluginName in Settings.getItems('Plugins'):
-for pluginName in dir(__import__( "Embedded" )):
-    if not pluginName.startswith('__') and not pluginName.endswith('__'):
-        pkg =  __import__( "Embedded.%s" % pluginName )
-        for listing in dir(pkg):
-            obj = getattr(pkg, listing)
-            if inspect.ismodule(obj):
-                plugins[(obj.__TOOL_TYPE__,obj.__TYPE__)] = obj
+installed = []
+for f in os.listdir( "%s/Plugins/" % path_install ):
+    if f == "__pycache__": continue
+    if os.path.isdir( "%s/Plugins/%s" % (path_install,f) ):
+        installed.append('"%s"' % f)
 
-try:
-    import Toolbox.Embedded as ToolPlugins
-except Exception as e:
-    import Embedded as ToolPlugins
+# update the init
+f = open( '%s/Plugins/__init__.py' % path_install, 'w')
+f.write( "__all__ = [%s]" % ",".join(installed) )
+f.close()
+
+from Plugins import *
+
+plugins = {} 
+pkg =  __import__( "Plugins" )
+for listing in dir(pkg):
+    obj = getattr(pkg, listing)
+    if inspect.ismodule(obj):
+        for listing2 in dir(obj):
+            if listing2.endswith("Agent"):
+                obj2 = getattr(obj, listing2)
+                if inspect.ismodule(obj2):
+                    plugins[(obj2.__TOOL_TYPE__,obj2.__TYPE__)] = obj2
+            
+            
+# for pluginID, pluginName in Settings.getItems('Plugins'):
+# for pluginName in dir(__import__( "Embedded" )):
+    # if not pluginName.startswith('__') and not pluginName.endswith('__'):
+        # pkg =  __import__( "Embedded.%s" % pluginName )
+        # for listing in dir(pkg):
+            # obj = getattr(pkg, listing)
+            # if inspect.ismodule(obj):
+                # plugins[(obj.__TOOL_TYPE__,obj.__TYPE__)] = obj
+
+# try:
+    # import Toolbox.Embedded as ToolPlugins
+# except Exception as e:
+    # import Embedded as ToolPlugins
 
 RETURN_CONFIG               =   -1
 RETURN_TYPE_UNKNOWN         =   -2
