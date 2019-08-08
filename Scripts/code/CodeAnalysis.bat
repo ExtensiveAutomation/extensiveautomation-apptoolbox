@@ -22,10 +22,7 @@
 
 set Project=%~dp0..\..\
 
-set PythonVersion=36
-set Python=C:\Python%PythonVersion%\python.exe
-
 :: execute analysis
-"%Python%" "%Project%\PyChecker.py"
+py "%Project%\PyChecker.py"
 
 pause

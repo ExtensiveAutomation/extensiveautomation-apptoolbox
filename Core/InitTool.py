@@ -79,21 +79,6 @@ for listing in dir(pkg):
                 obj2 = getattr(obj, listing2)
                 if inspect.ismodule(obj2):
                     plugins[(obj2.__TOOL_TYPE__,obj2.__TYPE__)] = obj2
-            
-            
-# for pluginID, pluginName in Settings.getItems('Plugins'):
-# for pluginName in dir(__import__( "Embedded" )):
-    # if not pluginName.startswith('__') and not pluginName.endswith('__'):
-        # pkg =  __import__( "Embedded.%s" % pluginName )
-        # for listing in dir(pkg):
-            # obj = getattr(pkg, listing)
-            # if inspect.ismodule(obj):
-                # plugins[(obj.__TOOL_TYPE__,obj.__TYPE__)] = obj
-
-# try:
-    # import Toolbox.Embedded as ToolPlugins
-# except Exception as e:
-    # import Embedded as ToolPlugins
 
 RETURN_CONFIG               =   -1
 RETURN_TYPE_UNKNOWN         =   -2
@@ -138,7 +123,9 @@ class Tool(object):
 
         try:
             Settings.initialize()
-            Logger.initialize( logPathFile = "%s/%s/%s.log" % (Settings.getDirExec(), Settings.get('Paths', 'logs'), name)  )
+            Logger.initialize( logPathFile = "%s/%s/%s.log" % (Settings.getDirExec(), 
+                                                               Settings.get('Paths', 'logs'), 
+                                                               name)  )
             if (isAgent, str(type)) in plugins:
                 self.info( "Initialize %s tool type=%s..." % (type,isAgent) )
                 
@@ -448,8 +435,10 @@ def instance ():
     global TOOLBOX
     return TOOLBOX
 
-def start(serverIp, serverPort, toolType, toolName, toolDescr, defaultTool=False, supportProxy=False, 
-                    proxyIp=None, proxyPort=None, sslSupport=True, isAgent=0, fromCmd=True):
+def start(serverIp, serverPort, toolType, toolName, toolDescr, 
+            defaultTool=False, supportProxy=False, 
+            proxyIp=None, proxyPort=None, sslSupport=True, 
+            isAgent=0, fromCmd=True):
     """
     Start the tool
     
@@ -465,9 +454,12 @@ def start(serverIp, serverPort, toolType, toolName, toolDescr, defaultTool=False
     @param toolDescr:
     @type toolDescr: 
     """
-    instance().initialize(serverIp, serverPort, toolType, toolName, toolDescr, defaultTool,
-                            supportProxy=supportProxy, proxyIp=proxyIp, proxyPort=proxyPort, 
-                            sslSupport=sslSupport, isAgent=isAgent, fromCmd=fromCmd)
+    instance().initialize(serverIp, serverPort, toolType, 
+                          toolName, toolDescr, defaultTool,
+                          supportProxy=supportProxy, 
+                          proxyIp=proxyIp, proxyPort=proxyPort, 
+                          sslSupport=sslSupport, isAgent=isAgent, 
+                          fromCmd=fromCmd)
 
 def stop():
     """

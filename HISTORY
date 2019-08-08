@@ -1,4 +1,16 @@
 
+15.0.0
+	Date: 20/07/2019
+	What's new		
+		1. (major) All probes removed, replaced by agent
+		2. (medium) Built with python to 3.7.3 and pyqt to 5.11.0
+		3. (major) Default api port changed to 8080
+		4. (major) No more qt plugins - feature removed, use python plugin directly 
+		5. (major) Build: no more setup file provided, use the portable version
+		6. (major) No more plugins embedded, plugins must be added manually
+	Issues Fixed
+		1. None
+        
 14.0.0
 	Date: 05/08/2018
 	What's new		

@@ -50,7 +50,11 @@ Settings.set( section='Trace', key='level', value='INFO' )
 
 Settings.set( section='Server', key='ip', value='127.0.0.1' )
 Settings.set( section='Server', key='port', value='8080' )
-# Settings.set( section='Server', key='port-xmlrpc', value='8080' )
+Settings.set( section='Server', key='rest-api-port', value='8080' )
+Settings.set( section='Server', key='rest-api-path', value='/rest/' )
+Settings.set( section='Server', key='rest-api-ssl', value='True' )
+Settings.set( section='Server', key='ssl-support', value='True' )
+
 Settings.set( section='Server', key='port-proxy-http', value='' )
 Settings.set( section='Server', key='addr-proxy-http', value='' )
 Settings.set( section='Server', key='proxy-active', value='False' )

@@ -77,7 +77,8 @@ class TestThread(threading.Thread):
     """
     Test Thread
     """
-    def __init__(self, parent, testUuid, scriptId, adapterId, interval=40, shared=False):
+    def __init__(self, parent, testUuid, scriptId, 
+                    adapterId, interval=40, shared=False):
         """
         """
         threading.Thread.__init__(self)
@@ -117,7 +118,9 @@ class TestThread(threading.Thread):
                 self.parent.trace("timeout raised, no more keepalive received from test server" )
                 break
             time.sleep(1)
-        self.onTerminated(testUuid=self.testUuid, scriptId=self.scriptId, adapterId=self.adapterId)
+        self.onTerminated(testUuid=self.testUuid, 
+                          scriptId=self.scriptId, 
+                          adapterId=self.adapterId)
     
     def putItem(self, item):
         """
@@ -175,18 +178,18 @@ class Tool(NetLayerLib.ClientAgent):
         if Settings.getBool( 'Server', 'websocket-support' ): wsSupport=True 
 
         NetLayerLib.ClientAgent.__init__(self, typeAgent = toolType, startAuto = True,
-                                            keepAliveInterval=Settings.getInt( 'Network', 'keepalive-interval' ),
-                                            inactivityTimeout=Settings.getInt( 'Network', 'inactivity-timeout' ),
-                                            timeoutTcpConnect=Settings.getInt( 'Network', 'tcp-connect-timeout' ),
-                                            responseTimeout=Settings.getInt( 'Network', 'response-timeout' ),
-                                            selectTimeout=Settings.get( 'Network', 'select-timeout' ),
-                                            sslSupport=self.sslSupportFinal,
-                                            wsSupport=wsSupport,
-                                            pickleVer=Settings.getInt( 'Network', 'pickle-version' ),
-                                            tcpKeepAlive=Settings.getBool( 'Network', 'tcp-keepalive' ), 
-                                            tcpKeepIdle=Settings.getInt( 'Network', 'tcp-keepidle' ),
-                                            tcpKeepCnt=Settings.getInt( 'Network', 'tcp-keepcnt' ), 
-                                            tcpKeepIntvl=Settings.getInt( 'Network', 'tcp-keepintvl' )
+                                        keepAliveInterval=Settings.getInt( 'Network', 'keepalive-interval' ),
+                                        inactivityTimeout=Settings.getInt( 'Network', 'inactivity-timeout' ),
+                                        timeoutTcpConnect=Settings.getInt( 'Network', 'tcp-connect-timeout' ),
+                                        responseTimeout=Settings.getInt( 'Network', 'response-timeout' ),
+                                        selectTimeout=Settings.get( 'Network', 'select-timeout' ),
+                                        sslSupport=self.sslSupportFinal,
+                                        wsSupport=wsSupport,
+                                        pickleVer=Settings.getInt( 'Network', 'pickle-version' ),
+                                        tcpKeepAlive=Settings.getBool( 'Network', 'tcp-keepalive' ), 
+                                        tcpKeepIdle=Settings.getInt( 'Network', 'tcp-keepidle' ),
+                                        tcpKeepCnt=Settings.getInt( 'Network', 'tcp-keepcnt' ), 
+                                        tcpKeepIntvl=Settings.getInt( 'Network', 'tcp-keepintvl' )
                                         )
         serverPort = Settings.getInt( 'Server', 'port' )
         if controllerPort is not None:
@@ -200,7 +203,9 @@ class Tool(NetLayerLib.ClientAgent):
         if name is not None:
             self.setDetails( name = name, desc = toolMore, ver = Settings.getVersion() )
         else:
-            self.setDetails( name = self.__class__.__name__, desc = toolMore, ver = Settings.getVersion() )
+            self.setDetails( name = self.__class__.__name__, 
+                             desc = toolMore, 
+                             ver = Settings.getVersion() )
         
         self.controllerIp = controllerIp
         self.controllerPort = serverPort
@@ -271,7 +276,8 @@ class Tool(NetLayerLib.ClientAgent):
         """
         Return timestamp
         """
-        ret = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime(time.time()))  + ".%3.3d" % int((time.time() * 1000)% 1000  )
+        ret = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime(time.time()))  \
+                            + ".%3.3d" % int((time.time() * 1000)% 1000  )
         return ret
         
     def onRequest(self, client, tid, request):
@@ -301,6 +307,7 @@ class Tool(NetLayerLib.ClientAgent):
                     
             elif request['cmd'] == Messages.RSQ_NOTIFY:
                 self.onNotify(client, tid, request=request['body'])
+                
             else:
                 self.error( '[onRequest] request unknown %s' % request['cmd'])
         except Exception as e:
@@ -494,33 +501,33 @@ class Tool(NetLayerLib.ClientAgent):
         """
         pass
         
-    def onInitialize(self, tid, data):
-        """
-        Called on initialization
-        """
-        self.trace( 'Data received: %s'  % str(data) )
-        try:
-            ret = {}
-            ret['callid'] = CALL_FAILED
-            callId = self.prepareTmpDir()
-            if callId is None:
-                ret['callid'] = SYSTEM_ERROR
-                self.startResponse( tid, ret )
-            else:
-                ret['callid'] = callId
+    # def onInitialize(self, tid, data):
+        # """
+        # Called on initialization
+        # """
+        # self.trace( 'Data received: %s'  % str(data) )
+        # try:
+            # ret = {}
+            # ret['callid'] = CALL_FAILED
+            # callId = self.prepareTmpDir()
+            # if callId is None:
+                # ret['callid'] = SYSTEM_ERROR
+                # self.startResponse( tid, ret )
+            # else:
+                # ret['callid'] = callId
                 # check params
-                params =  data['args']
-                argsOk = True
-                for a in self.__args__:
-                    if not a in params:
-                        argsOk = False
-                if not argsOk:
-                    ret['callid'] = ARGUMENTS_MISSING
-                    self.startResponse( tid, ret )
-                else:
-                    self.onStart( callId, tid, data )
-        except Exception as e:
-            self.error( "Generic exception  %s" % str(e) )
+                # params =  data['args']
+                # argsOk = True
+                # for a in self.__args__:
+                    # if not a in params:
+                        # argsOk = False
+                # if not argsOk:
+                    # ret['callid'] = ARGUMENTS_MISSING
+                    # self.startResponse( tid, ret )
+                # else:
+                    # self.onStart( callId, tid, data )
+        # except Exception as e:
+            # self.error( "Generic exception  %s" % str(e) )
 
     def onDisconnection(self, byServer=False, inactivityServer=False):
         """
@@ -790,16 +797,16 @@ class Tool(NetLayerLib.ClientAgent):
                 err =  unicode(err, 'latin2')
         Logger.error( "[%s] %s" % ( self.__class__.__name__, err ) )
 
-    def prepareTmpDir(self):
-        """
-        Prepare the temp folder
-        """
-        callId = self.getCallId()
-        dirCreated = self.addCallIdTmpDir( dirName=callId )
-        if not dirCreated:
-            return None
-        else:
-            return callId
+    # def prepareTmpDir(self):
+        # """
+        # Prepare the temp folder
+        # """
+        # callId = self.getCallId()
+        # dirCreated = self.addCallIdTmpDir( dirName=callId )
+        # if not dirCreated:
+            # return None
+        # else:
+            # return callId
 
     def getCallId (self):
         """
@@ -839,40 +846,40 @@ class Tool(NetLayerLib.ClientAgent):
         except Exception as e:
             self.error( "Unable to delete the temp folder %s" % str(e) )
 
-    def addCallIdTmpDir(self, dirName):
-        """
-        Add callid folder in temp
-        """
-        ret = False
-        try:
-            if sys.platform == "win32" :
-                completepath = "%s\\%s" % ( self.__tmpPath__ , dirName )
-            else:
-                completepath = "%s/%s" % ( self.__tmpPath__ , dirName )
-            if os.path.exists( completepath ):
-                self.delCallIdTmpDir(dirName=dirName)   
-            self.trace( "Adding callid folder %s in temp" % dirName )
-            os.mkdir( completepath )
-            ret = True
-            self.trace( "CallID folder %s created with success" % dirName )
-        except Exception as e:
-            self.error( "Unable to add the callid folder in temp %s" % str(e) )
-        return ret
+    # def addCallIdTmpDir(self, dirName):
+        # """
+        # Add callid folder in temp
+        # """
+        # ret = False
+        # try:
+            # if sys.platform == "win32" :
+                # completepath = "%s\\%s" % ( self.__tmpPath__ , dirName )
+            # else:
+                # completepath = "%s/%s" % ( self.__tmpPath__ , dirName )
+            # if os.path.exists( completepath ):
+                # self.delCallIdTmpDir(dirName=dirName)   
+            # self.trace( "Adding callid folder %s in temp" % dirName )
+            # os.mkdir( completepath )
+            # ret = True
+            # self.trace( "CallID folder %s created with success" % dirName )
+        # except Exception as e:
+            # self.error( "Unable to add the callid folder in temp %s" % str(e) )
+        # return ret
 
-    def delCallIdTmpDir(self, dirName):
-        """
-        Delete callid folder from temp
-        """
-        try:
-            if sys.platform == "win32" :
-                completepath = "%s\\%s" % ( self.__tmpPath__ , dirName  )
-            else:
-                completepath = "%s/%s" % ( self.__tmpPath__ , dirName  )
-            self.trace( "Deleting folder %s in temp" % completepath )
-            shutil.rmtree( completepath )
-            self.trace( "CallId folder %s deleted with success" % dirName )
-        except Exception as e:
-            self.error( "Unable to delete the call id folder in %s" % str(e) )
+    # def delCallIdTmpDir(self, dirName):
+        # """
+        # Delete callid folder from temp
+        # """
+        # try:
+            # if sys.platform == "win32" :
+                # completepath = "%s\\%s" % ( self.__tmpPath__ , dirName  )
+            # else:
+                # completepath = "%s/%s" % ( self.__tmpPath__ , dirName  )
+            # self.trace( "Deleting folder %s in temp" % completepath )
+            # shutil.rmtree( completepath )
+            # self.trace( "CallId folder %s deleted with success" % dirName )
+        # except Exception as e:
+            # self.error( "Unable to delete the call id folder in %s" % str(e) )
 
     def prepareTempDir(self):
         """
@@ -923,103 +930,107 @@ class Tool(NetLayerLib.ClientAgent):
         """
         self.info( 'Notify the server'  )
         try:
-            tpl =  { 'cmd': Messages.CMD_NEW_FILE, 'result-path': resultPath, 'filename': fileName } 
+            tpl =  { 'cmd': Messages.CMD_NEW_FILE, 
+                     'result-path': resultPath, 
+                     'filename': fileName } 
             NetLayerLib.ClientAgent.notify( self, data = tpl )
         except Exception as e:
             self.error( "unable to send notify: %s"  % str(e) )
             
-    def startResponse (self, tid, body = None):
-        """
-        Send ok reponse
+    # def startResponse (self, tid, body = None):
+        # """
+        # Send ok reponse
 
-        @param tid:
-        @type tid:
+        # @param tid:
+        # @type tid:
 
-        @param body:
-        @type body:
-        """
-        NetLayerLib.ClientAgent.ok(self, tid, body)
+        # @param body:
+        # @type body:
+        # """
+        # print("aa")
+        # NetLayerLib.ClientAgent.ok(self, tid, body)
 
-    def stopResponse(self, tid, body = None, additional = None, dataToSend=True):
-        """
-        Stop response
-        """
-        NetLayerLib.ClientAgent.ok(self, tid, body)
-        if dataToSend:
-            ret, pathZip, fileName = self.createZip( callId=additional['callid'], 
-                                                     zipReplayId=additional['replay-id'])
-            if not ret:
-                self.trace( 'Unable to create zip'  )
-            else:
-                self.uploadData(fileName=fileName, 
-                                resultPath=additional['result-path'], 
-                                data=None, 
-                                filePath=pathZip, 
-                                callId=additional['callid'])
+    # def stopResponse(self, tid, body = None, additional = None, dataToSend=True):
+        # """
+        # Stop response
+        # """
+        # print("bb")
+        # NetLayerLib.ClientAgent.ok(self, tid, body)
+        # if dataToSend:
+            # ret, pathZip, fileName = self.createZip( callId=additional['callid'], 
+                                                     # zipReplayId=additional['replay-id'])
+            # if not ret:
+                # self.trace( 'Unable to create zip'  )
+            # else:
+                # self.uploadData(fileName=fileName, 
+                                # resultPath=additional['result-path'], 
+                                # data=None, 
+                                # filePath=pathZip, 
+                                # callId=additional['callid'])
         
-    def createZip(self, callId, zipReplayId, zipPrefix="probe"):
-        """
-        Create zip
-        """
-        if sys.platform == "win32" :
-            completepath = "%s\\%s" % ( self.__tmpPath__ , callId )
-        else:
-            completepath = "%s/%s" % ( self.__tmpPath__ , callId )
-        fileName = '%s_%s_%s_%s_%s_%s' % ( zipPrefix, self.__type__, self.toolName, 
-                                            callId , self.getTimestamp(), zipReplayId)
+    # def createZip(self, callId, zipReplayId, zipPrefix="probe"):
+        # """
+        # Create zip
+        # """
+        # if sys.platform == "win32" :
+            # completepath = "%s\\%s" % ( self.__tmpPath__ , callId )
+        # else:
+            # completepath = "%s/%s" % ( self.__tmpPath__ , callId )
+        # fileName = '%s_%s_%s_%s_%s_%s' % ( zipPrefix, self.__type__, self.toolName, 
+                                            # callId , self.getTimestamp(), zipReplayId)
         
-        self.trace( 'Starting to create the zip file %s ' % fileName )
-        if sys.platform == "win32" :
-            ret = self.toZip(   file=completepath,
-                                filename= '%s\\%s.zip' % (completepath, fileName) , 
-                                fileToExclude = [ '%s.zip' % fileName ] )
-            return ( ret, '%s\\%s.zip' % (completepath, fileName), '%s.zip' % fileName )
-        else:
-            ret = self.toZip(   file=completepath,
-                                filename= '%s/%s.zip' % (completepath, fileName) , 
-                                fileToExclude = [ '%s.zip' % fileName ] )
-            return ( ret, '%s/%s.zip' % (completepath, fileName), '%s.zip' % fileName )
+        # self.trace( 'Starting to create the zip file %s ' % fileName )
+        # if sys.platform == "win32" :
+            # ret = self.toZip(   file=completepath,
+                                # filename= '%s\\%s.zip' % (completepath, fileName) , 
+                                # fileToExclude = [ '%s.zip' % fileName ] )
+            # return ( ret, '%s\\%s.zip' % (completepath, fileName), '%s.zip' % fileName )
+        # else:
+            # ret = self.toZip(   file=completepath,
+                                # filename= '%s/%s.zip' % (completepath, fileName) , 
+                                # fileToExclude = [ '%s.zip' % fileName ] )
+            # return ( ret, '%s/%s.zip' % (completepath, fileName), '%s.zip' % fileName )
 
-    def toZip(self, file, filename, fileToExclude):
-        """
-        Add file to zip
-        """
-        self.trace( 'Zip to %s' % file )
-        ret = False
-        try:
-            zip_file = zipfile.ZipFile(filename, 'w')
-            if os.path.isfile(file):
-                zip_file.write(file)
-            else:
-                self.addFolderToZip(zip_file, file, fileToExclude)
-            zip_file.close()
-            ret = True
-        except IOError as e:
-            self.error( "Io error  %s " % str(e) )
-        except Exception as e:
-            self.error( "General exception %s" % str(e) )
-        return ret
+    # def toZip(self, file, filename, fileToExclude):
+        # """
+        # Add file to zip
+        # """
+        # self.trace( 'Zip to %s' % file )
+        # ret = False
+        # try:
+            # zip_file = zipfile.ZipFile(filename, 'w')
+            # if os.path.isfile(file):
+                # zip_file.write(file)
+            # else:
+                # self.addFolderToZip(zip_file, file, fileToExclude)
+            # zip_file.close()
+            # ret = True
+        # except IOError as e:
+            # self.error( "Io error  %s " % str(e) )
+        # except Exception as e:
+            # self.error( "General exception %s" % str(e) )
+        # return ret
 
-    def addFolderToZip(self, zip_file, folder, fileToExclude=[]): 
-        """
-        Add folder to zip
-        """
-        try:
-            for file in os.listdir(folder):
-                full_path = os.path.join(folder, file)
-                if os.path.isfile(full_path):
-                    excludeFile = False
-                    for f in fileToExclude:
-                        if file == f:
-                            excludeFile = True
-                    if not excludeFile:
-                        zip_file.write(filename=full_path, arcname=file)
-                elif os.path.isdir(full_path):
-                    self.addFolderToZip(zip_file, full_path, fileToExclude)
-        except IOError as e:
-            raise IOError(e)
-        except Exception as e:
-            raise Exception( "addFolderToZip - %s" % str(e) )
+    # def addFolderToZip(self, zip_file, folder, fileToExclude=[]): 
+        # """
+        # Add folder to zip
+        # """
+        # try:
+            # for file in os.listdir(folder):
+                # full_path = os.path.join(folder, file)
+                # if os.path.isfile(full_path):
+                    # excludeFile = False
+                    # for f in fileToExclude:
+                        # if file == f:
+                            # excludeFile = True
+                    # if not excludeFile:
+                        # zip_file.write(filename=full_path, arcname=file)
+                # elif os.path.isdir(full_path):
+                    # self.addFolderToZip(zip_file, full_path, fileToExclude)
+        # except IOError as e:
+            # raise IOError(e)
+        # except Exception as e:
+            # raise Exception( "addFolderToZip - %s" % str(e) )
 
     def uploadData(self, fileName, resultPath, data=None, filePath=None, callId=None):
         """
@@ -1043,17 +1054,17 @@ class Tool(NetLayerLib.ClientAgent):
         """
         On upload error
         """
-        self.upload('upload error, cleanup temp folder')
-        if callId is not None:
-            self.delCallIdTmpDir(callId)
+        self.error('upload error, cleanup temp folder')
+        # if callId is not None:
+            # self.delCallIdTmpDir(callId)
         
-    def onUploadTerminated(self, resultPath, fileName, callId=None):
-        """
-        On upload terminated
-        """
-        if callId is not None:
+    # def onUploadTerminated(self, resultPath, fileName, callId=None):
+        # """
+        # On upload terminated
+        # """
+        # if callId is not None:
             # remove temp folder
-            self.delCallIdTmpDir(callId)
+            # self.delCallIdTmpDir(callId)
     
     def onTakeScreenshot(self, request, action, actionId, adapterId, testcaseName, replayId):
         """
@@ -1074,18 +1085,25 @@ class Tool(NetLayerLib.ClientAgent):
             
             https_proxy = "https://%s:%s" % (proxyAddr, proxyPort)
             proxyDict = { "https" : https_proxy}
-            
+
+        # for support server on python3, not nice ...
+        resultPath = resultPath.replace('\\', '\\\\')
+        
         req = '{"result-path": "%s", "file-name": "%s", "file-content": "%s"}' % ( resultPath,
                                                                                    fileName,
                                                                                    fileContent.decode("utf8") )
-        r = requests.post("https://%s:%s/rest/results/upload/file" % (self.controllerIp, self.controllerPort),
-                            headers = {'Content-Type': 'application/json;charset=utf-8'},
-                            data = req.encode("utf8"),
-                            proxies=proxyDict, verify=False)
+        api_scheme = "https"
+        if not eval( Settings.get( 'Server', 'rest-api-ssl' ) ):
+            api_scheme = "http"
+        api_url = "%s://%s:%s%sresults/upload/file" % ( api_scheme,
+                                                        self.controllerIp, 
+                                                        Settings.get( 'Server', 'rest-api-port' ),
+                                                        Settings.get( 'Server', 'rest-api-path' ))
+        self.trace("API URL=%s" % (api_url) )
+        r = requests.post(api_url,
+                        headers = {'Content-Type': 'application/json;charset=utf-8'},
+                        data = req.encode("utf8"),
+                        proxies=proxyDict, verify=False)
         if r.status_code != 200:
             self.error('Unable to reach the rest api: %s - %s' % (r.status_code, r.text) )
             self.onUploadError(callId=callId)
-        else:
-            self.onUploadTerminated(resultPath=resultPath, 
-                                    fileName=fileName,
-                                    callId=callId)

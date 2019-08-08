@@ -63,3 +63,18 @@ La procédure ci-dessous explique comment.
 1. Allez dans le répertoire `Scripts/qt5/` et exécuter le script `MakePortable.bat`
 
 2. L'exécutable est disponible dans le répertoire `dist`
+
+Comment utiliser la boite à outils sans reverse proxy devant le serveur ?
+--------------------------------------------------------------------
+
+Par défault, la boite à outils est configurée pour se connecter sur le serveur à travers un reverse proxy.
+Néanmoins, en modifiant manuellement la configuration il est possible de l'utiliser sans RP.
+
+Editer le fichier de configuration du client `settings.ini` comme ci-dessous:
+
+        [Server]
+        rest-api-path = /
+        rest-api-ssl = False
+        rest-api-port = 8081
+        ssl-support = False
+        port = 8083

@@ -95,9 +95,12 @@ class WritableObject(object):
 # W0631: Using possibly undefined loop variable 
 # W0633: Attempting to unpack a non-sequence%s
 
-ARGS = [ "--disable=all",  "--enable=E", "--enable=F", "--disable=E1101" , "--disable=E0611", "--disable=E1103",
-            "--enable=W0631", "--enable=C0111", "--enable=C0112", "--disable=W0633"
-          ] 
+ARGS = [ "--disable=all",  "--enable=E", 
+         "--enable=F", "--disable=E1101" , 
+         "--disable=E0611", "--disable=E1103",
+         "--enable=W0631", "--enable=C0111", 
+         "--enable=C0112", "--disable=W0633"
+       ] 
 
 # report generation or not ?
 if GenerateRepport:
@@ -179,7 +182,10 @@ for filename in result:
         if not len( pylint_output.read() ):
             print('\tNo error or fatal message detected')
         else:
-            f = open( "%s\\Scripts\\%s\\%s_%s.log" % (PATH, pathName, prefixName, os.path.basename(filename) ), 'w')
+            f = open( "%s\\Scripts\\%s\\%s_%s.log" % (PATH, 
+                                                      pathName, 
+                                                      prefixName, 
+                                                      os.path.basename(filename) ), 'w')
             f.write( ''.join(pylint_output.read()) )
             f.close()
             for line in pylint_output.read():

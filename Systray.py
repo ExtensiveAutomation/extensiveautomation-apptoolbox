@@ -38,8 +38,10 @@ except:
     pass
     
 try:
-	from PyQt4.QtCore import (pyqtSignal, QTimer, Qt, QRect, QSize, QT_VERSION_STR, PYQT_VERSION_STR, 
-							 QFile, QByteArray, QBuffer, QIODevice, QTranslator, QLibraryInfo,
+	from PyQt4.QtCore import (pyqtSignal, QTimer, Qt, QRect, QSize, 
+                             QT_VERSION_STR, PYQT_VERSION_STR, 
+							 QFile, QByteArray, QBuffer, QIODevice, 
+                             QTranslator, QLibraryInfo,
                              QProcess)
 	from PyQt4.QtGui import (QGridLayout, QVBoxLayout, QHBoxLayout, QApplication, QColor,
 							QWidget, QDialog, QPushButton, QLineEdit, QLabel, QTextEdit, 
@@ -48,8 +50,10 @@ try:
 							QSortFilterProxyModel, QSystemTrayIcon, QToolBar, QTabWidget, 
 							QAction, QMenu, QSystemTrayIcon, QPixmap, qApp, QListWidget)
 except ImportError:
-	from PyQt5.QtCore import (pyqtSignal, QTimer, Qt, QRect, QSize, QT_VERSION_STR, PYQT_VERSION_STR, 
-							 QFile, QByteArray, QBuffer, QIODevice, QTranslator, QLibraryInfo,
+	from PyQt5.QtCore import (pyqtSignal, QTimer, Qt, QRect, QSize, 
+                             QT_VERSION_STR, PYQT_VERSION_STR, 
+							 QFile, QByteArray, QBuffer, QIODevice, 
+                             QTranslator, QLibraryInfo,
 							 QSortFilterProxyModel, QProcess)
 	from PyQt5.QtWidgets import (QGridLayout, QVBoxLayout, QHBoxLayout, QApplication,
 							QWidget, QDialog, QPushButton, QLineEdit, QLabel, QTextEdit, 
@@ -75,7 +79,7 @@ __BEGIN__ = "2010"
 # year of the latest build
 __END__="2019"
 # date and time of the buid
-__BUILDTIME__="18/07/2019 14:34:57"
+__BUILDTIME__="08/08/2019 10:58:04"
 # Redirect stdout and stderr to log file only on production
 REDIRECT_STD=True
 
@@ -123,15 +127,22 @@ if not os.path.exists( "%s/Plugins/" % QtHelper.dirExec() ):
     os.mkdir( "%s/Plugins" % QtHelper.dirExec() )
 
 Settings.initialize()
-Logger.initialize( logPathFile = "%s/%s/systray.log" % (Settings.getDirExec(),Settings.get('Paths', 'logs'))  )   
+Logger.initialize( logPathFile = "%s/%s/systray.log" % (Settings.getDirExec(),
+                                                        Settings.get('Paths', 'logs'))  )   
 
 
 # Enable redirects output and error on production
 if sys.version_info < (3,):
     if REDIRECT_STD:
         buf_arg = 0
-        sys.stdout = open( "%s/%s/systray.log" % (Settings.getDirExec(),Settings.get('Paths', 'logs')) ,"a", buf_arg)
-        sys.stderr = open( "%s/%s/systray.log" % (Settings.getDirExec(),Settings.get('Paths', 'logs')) ,"a", buf_arg)
+        sys.stdout = open( "%s/%s/systray.log" % (Settings.getDirExec(),
+                                                  Settings.get('Paths', 'logs')) ,
+                                                  "a", 
+                                                  buf_arg)
+        sys.stderr = open( "%s/%s/systray.log" % (Settings.getDirExec(),
+                                                  Settings.get('Paths', 'logs')),
+                                                  "a", 
+                                                  buf_arg)
 else: # python 3 support
     if REDIRECT_STD:
         sys.stdout = open( "%s/Logs/systray_sdtout.log" % QtHelper.dirExec() ,"a", 1) # 1 to select line buffering (only usable in text mode)
@@ -1531,15 +1542,7 @@ class DeployPage(QWidget):
             if plugType == pluginType and pluginId == plugId:
                 pluginDetected = pluginObj
                 break
-                
-        # if pluginDetected is None:
-            # for plugId, plugMore in PLUGINS_AGENT_EXTERNAL.items():
-                # plugPath, plugExe, pluginCfg  = plugMore
-                # if pluginType == TOOL_EXT_AGENT and pluginCfg["plugin"]["name"].lower() == pluginId.lower():
-                    # pObj = PluginObj(pluginCfg["plugin"]['resume'], pluginCfg["plugin"]['with-ide'])
-                    # pluginDetected = pObj
-                    # break
-                    
+
         if pluginDetected is not None:
             self.typeLabel.setText(TOOLS_DESCR[pluginType])
             self.purposeLabel.setText(pluginDetected.__RESUME__)
@@ -2215,7 +2218,11 @@ class Window(QDialog):
         byteArray = QByteArray()
         buffer = QBuffer(byteArray)
         buffer.open(QIODevice.WriteOnly)
-        thumbnail.save(buffer, extension, quality=int(Settings.get( 'Screenshot', 'thumbnail-quality' )) )
+        thumbnail.save(
+                       buffer, 
+                       extension, 
+                       quality=int(Settings.get( 'Screenshot', 'thumbnail-quality' )) 
+                       )
 
         if sys.version_info > (3,): # python 3 support
             thumbnailIo = StringIO.BytesIO(byteArray)

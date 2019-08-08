@@ -60,3 +60,18 @@ Portable version can be build on Windows. Follow this procedure if you want to.
 1. Go in the folder `Scripts/qt5/` and execute the script `MakePortable.bat`
 
 2. The output is available in the `dist` folder
+
+
+
+How to use the toolbox without reverse proxy in front of the server ?
+--------------------------------------------------------------------
+
+By default, the toolbox is configured to be used with a reverse proxy.
+It's possible to change that by updating the `settings.ini` as follow:
+
+        [Server]
+        rest-api-path = /
+        rest-api-ssl = False
+        rest-api-port = 8081
+        ssl-support = False
+        port = 8083
