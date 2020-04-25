@@ -379,8 +379,12 @@ class MobileWidget(QWidget):
                     
                     pixmap = self.mobileImageLabel.pixmap()
                     if pixmap is not None:
-                        x_scaled = int( ( self.origWidth * x ) / pixmap.width() )
-                        y_scaled = int( ( self.origHeight * y ) / pixmap.height() )
+                        x_scaled = 0
+                        y_scaled = 0
+                        if pixmap.width() > 0: 
+                            x_scaled = int( ( self.origWidth * x ) / pixmap.width() )
+                        if pixmap.height() > 0:
+                            y_scaled = int( ( self.origHeight * y ) / pixmap.height() )
                         self.mobileImageLabel.setToolTip("%sx%s" % (x_scaled,y_scaled) )
 
         return False
